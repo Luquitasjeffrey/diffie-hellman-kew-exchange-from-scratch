@@ -9,18 +9,9 @@
 #include "socket.c"
 
 /*
-"/home/lucas/Desktop/C/gmp/cryptography/DH Key exchange"
-
-gcc -o largeprime dhke.c -lgmp -lm
+if you are in linux compile with the following command:
+gcc -o diffie_hellman_key_exchange dhke.c -lgmp -lm
 */
-/*
-void generatekeypairs(mpz_t k1, mpz_t k2){
-    mpz_init(k1);
-    mpz_init(k2);
-    mpz_urandomb(k1, time(0), 256);
-}
-*/
-
 void generatep(int bits, mpz_t rand){
     // *********************** VARIABLE DECLARATION *********************** //
     // initilize the variables as gmp class instances
@@ -64,7 +55,7 @@ void generatep(int bits, mpz_t rand){
     // clear the memory locations for the variables used to avoid leaks
     mpz_clear(l);
     //gmp_printf("randomly generated prime: %Zd\n", rand);
-}
+}//this function was copied from github.(i have to modify some thinks but it works)
 
 void modexp(mpz_t ptr, mpz_t p, mpz_t q, mpz_t n, int nbits){
     //computes p^n mod q
@@ -210,60 +201,16 @@ void exchangekeydemo(mpz_t ptr, mpz_t pk0, mpz_t p, mpz_t q){
     printf("no so iguales\n");
 }
 
-void DFKXCHR(mpz_t ptr, mpz_t pk0, mpz_t p, mpz_t q, SOCKET request){//diffie-hellman key exchange request
-
-    mpz_t g0;
-    modexp(g0, p, q, pk0, 4096);
-    /*
-        exchange keys via internet, send g and recv the other g
-    */
-
-    char * g=mpz_get_str(NULL, 16, g0);
-    char * initg1=xch_g(g, strlen(g), request);
-    mpz_t g1; mpz_init(g1); mpz_set_str(g1, initg1, 16); //g1=recv()
-    free(g);
-    free(initg1);
-    /*
-        end of exch keys over the internet
-    */
-
-    modexp(ptr, g1, q, pk0, 4096);
-    gmp_printf("the resultant key'0 is: %Zu\n", ptr);
-    mpz_clear(g1);
-    mpz_clear(g0);
-}
-
-void mainloop(mpz_t ptr, mpz_t pk0, mpz_t p, mpz_t q, struct connections * conn){
-    const struct timeval wait={1, 0};
-    for(;;){
-        fd_set copy=conn->pwm;
-        int stop=select(conn->pwnsize, &copy, NULL, NULL, &wait);
-        int i=0;
-        for(; i<FD_SETSIZE; i++){
-            if(!(bool)FD_ISSET(i, &copy)){
-                continue;
-            }
-            //handle new connection
-
-        }
-
-    }
-
-}
-
 int main(){
 
     mpz_t p, q;
     //generatekeypairs(4096, p, q);
-    setDefaultKeyPairs(p, q);
-    //gmp_printf("\n\nThe selected keypairs are: q=%Zx\n\np=%Zx\n", p, q);
+    //is the same if you generate the keys than if you set defaults. By setting deffaults, the code will run faster
+    setDefaultKeyPairs(p, q); //if you decide to generate p&&q, please comment this line
     mpz_t prk;
     generatepk0(prk, q);
     mpz_t symmetric_key;
     exchangekeydemo(symmetric_key, prk, p, q);
-    //mpz_init(p); mpz_init(q); mpz_init(n);
-    //mpz_set_ui(p, 3); mpz_set_ui(q, 7); mpz_set_ui(n, 6);
-    //modexp(mod, p, q, n, 3);
-    //gmp_printf("%Zu\n", mod);
     return 0;
 }
+//you can actually use this and i sure it will be secure. Cortesy of the GNU multipresition library (gmp).
